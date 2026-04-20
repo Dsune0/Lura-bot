@@ -1,0 +1,4 @@
+.env
+config.json
+panels.json
+__pycache__/
