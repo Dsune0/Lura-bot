@@ -68,7 +68,12 @@ Example:
 
 This posts a panel with:
 
+From channel, To channel, Users
+
+Buttons to:
+
 Move -> moves listed users from `from_channel` -> `to_channel`
+
 Move Back -> move listed users `to_channel` -> `from_channel`
 
 ---
