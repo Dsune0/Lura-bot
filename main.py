@@ -9,6 +9,7 @@ from discord.ext import commands
 
 PANELS_FILE = "panels.json"
 
+
 def get_token():
     token = os.getenv("DISCORD_TOKEN")
     if token:
@@ -23,6 +24,7 @@ def get_token():
             pass
 
     return None
+
 
 def load_panels() -> list[dict[str, Any]]:
     if not os.path.exists(PANELS_FILE):
@@ -91,21 +93,32 @@ class MovePanelView(discord.ui.View):
     async def on_error(
         self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item
     ) -> None:
-        return
+        if interaction.response.is_done():
+            await interaction.followup.send("An error occurred.", ephemeral=True)
+        else:
+            await interaction.response.send_message(
+                "An error occurred.", ephemeral=True
+            )
 
-    async def _handle_move(self, interaction: discord.Interaction, direction: str) -> None:
+    async def _send_error(self, interaction: discord.Interaction, message: str) -> None:
+        if interaction.response.is_done():
+            await interaction.followup.send(message, ephemeral=True)
+        else:
+            await interaction.response.send_message(message, ephemeral=True)
+
+    async def _handle_move(
+        self, interaction: discord.Interaction, direction: str
+    ) -> None:
         panels = load_panels()
         panel = next((p for p in panels if int(p["panel_id"]) == self.panel_id), None)
 
         if panel is None:
-            if not interaction.response.is_done():
-                await interaction.response.defer(ephemeral=True, thinking=False)
+            await self._send_error(interaction, "This panel no longer exists.")
             return
 
         guild = interaction.guild
         if guild is None or guild.id != int(panel["guild_id"]):
-            if not interaction.response.is_done():
-                await interaction.response.defer(ephemeral=True, thinking=False)
+            await self._send_error(interaction, "This panel cannot be used here.")
             return
 
         from_channel = guild.get_channel(int(panel["from_channel_id"]))
@@ -114,15 +127,31 @@ class MovePanelView(discord.ui.View):
         if not isinstance(from_channel, discord.VoiceChannel) or not isinstance(
             to_channel, discord.VoiceChannel
         ):
-            if not interaction.response.is_done():
-                await interaction.response.defer(ephemeral=True, thinking=False)
+            await self._send_error(
+                interaction,
+                "One or both configured voice channels are missing.",
+            )
+            return
+
+        me = guild.me or guild.get_member(self.panel_id)
+        if me is None:
+            me = guild.me
+        if me is None:
+            await self._send_error(interaction, "Bot member lookup failed.")
+            return
+
+        if not guild.me.guild_permissions.move_members:
+            await self._send_error(
+                interaction,
+                "I do not have permission to move members.",
+            )
             return
 
         source = from_channel if direction == "move" else to_channel
         target = to_channel if direction == "move" else from_channel
 
         if not interaction.response.is_done():
-            await interaction.response.defer(ephemeral=True, thinking=False)
+            await interaction.response.defer(ephemeral=True)
 
         for user_id in panel["user_ids"]:
             member = guild.get_member(int(user_id))
@@ -140,12 +169,26 @@ class MovePanelView(discord.ui.View):
                 continue
 
             try:
-                await member.move_to(target, reason=f"Voice Move Panel #{self.panel_id}")
+                await member.move_to(
+                    target, reason=f"Voice Move Panel #{self.panel_id}"
+                )
+            except discord.Forbidden:
+                await interaction.followup.send(
+                    "I do not have permission to move one or more members.",
+                    ephemeral=True,
+                )
+                return
             except discord.HTTPException:
-                continue
+                await interaction.followup.send(
+                    "An error occurred while moving members.",
+                    ephemeral=True,
+                )
+                return
 
 
-class MoveButton(discord.ui.DynamicItem[discord.ui.Button], template=r"move:(?P<panel_id>\d+)"):
+class MoveButton(
+    discord.ui.DynamicItem[discord.ui.Button], template=r"move:(?P<panel_id>\d+)"
+):
     def __init__(self, panel_id: int):
         super().__init__(
             discord.ui.Button(
@@ -207,7 +250,12 @@ class Bot(commands.Bot):
 bot = Bot()
 
 
-@bot.tree.command(name="create_comp")
+@bot.tree.command(name="create_comp", description="Create a voice-chat move panel.")
+@app_commands.describe(
+    from_channel="Main voice channel",
+    to_channel="Split voice channel",
+    users="Mentions or space-separated user IDs",
+)
 @app_commands.checks.has_permissions(move_members=True)
 async def create_comp(
     interaction: discord.Interaction,
@@ -219,7 +267,7 @@ async def create_comp(
 
     if not user_ids:
         await interaction.response.send_message(
-            "Use mentions or space-separated user IDs.",
+            "No valid users provided. Use mentions or space-separated user IDs.",
             ephemeral=True,
         )
         return
@@ -229,8 +277,13 @@ async def create_comp(
 
     view = MovePanelView(panel_id)
     embed = discord.Embed(title="Voice Move Panel")
-
-    await interaction.response.defer(ephemeral=True)
+    embed.add_field(name="From channel", value=from_channel.mention, inline=False)
+    embed.add_field(name="To channel", value=to_channel.mention, inline=False)
+    embed.add_field(
+        name="Users",
+        value=" ".join(f"<@{user_id}>" for user_id in user_ids),
+        inline=False,
+    )
 
     message = await interaction.channel.send(embed=embed, view=view)
 
@@ -246,6 +299,23 @@ async def create_comp(
         }
     )
     save_panels(panels)
+
+    await interaction.response.send_message("Panel created.", ephemeral=True)
+
+
+@create_comp.error
+async def create_comp_error(
+    interaction: discord.Interaction, error: app_commands.AppCommandError
+):
+    if isinstance(error, app_commands.MissingPermissions):
+        message = "You need the `Move Members` permission to use this panel."
+    else:
+        message = "An error occurred."
+
+    if interaction.response.is_done():
+        await interaction.followup.send(message, ephemeral=True)
+    else:
+        await interaction.response.send_message(message, ephemeral=True)
 
 
 if __name__ == "__main__":
