@@ -9,6 +9,20 @@ from discord.ext import commands
 
 PANELS_FILE = "panels.json"
 
+def get_token():
+    token = os.getenv("DISCORD_TOKEN")
+    if token:
+        return token
+
+    if os.path.exists("config.json"):
+        try:
+            with open("config.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data.get("token")
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return None
 
 def load_panels() -> list[dict[str, Any]]:
     if not os.path.exists(PANELS_FILE):
@@ -235,7 +249,7 @@ async def create_comp(
 
 
 if __name__ == "__main__":
-    token = os.getenv("DISCORD_TOKEN")
+    token = get_token()
     if not token:
         raise RuntimeError("Set DISCORD_TOKEN")
     bot.run(token)
