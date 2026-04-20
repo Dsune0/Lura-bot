@@ -108,7 +108,7 @@ python main.py
 Example:
 
 ```
-/create_comp from_channel:Lobby to_channel:Game users:@user1 @user2
+/create_comp from_channel:Raid to_channel:Party1 users:@user1 @user2
 ```
 
 ---
