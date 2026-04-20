@@ -6,7 +6,7 @@ Bot that creates panels with buttons to move specific users between two voice ch
 
 ## 1. Create and Set Up the Bot
 
-Go to the Discord Developer Portal
+Go to the [Discord Developer Portal](https://discord.com/developers/applications)
 
 ### Create the bot
 
