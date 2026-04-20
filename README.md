@@ -1,52 +1,97 @@
-# Lura bot
+# Lura Bot
 
 Bot that creates panels with buttons to move specific users between two voice channels.
 
-## Setup
+---
 
-### 1. Clone / Install
+## 1. Create and Set Up the Bot
+
+Go to the Discord Developer Portal
+
+### Create the bot
+
+1. Create a new application
+2. Go to **Bot** → **Add Bot**
+3. Copy the **Bot Token** (keep it secret)
+
+---
+
+### Enable required settings
+
+**Bot → Privileged Gateway Intents**
+
+* Enable **Server Members Intent**
+
+---
+
+### Configure install permissions
+
+**Installation → Default Install Settings → Guild Install**
+
+**Scopes:**
+
+* `bot`
+* `applications.commands`
+
+**Permissions:**
+
+* `Move Members`
+* `View Channels`
+* `Send Messages`
+* `Embed Links`
+
+Use the generated URL to invite the bot to your server.
+Make sure the bot role has access to the relevant voice and text channels.
+
+---
+
+## 2. Run on Replit
+
+1. Go to Replit
+2. Click **Import code or design**
+3. Choose **GitHub** and paste:
+
+   ```
+   https://github.com/Dsune0/Lura-bot
+   ```
+4. Import the repo
+5. Open **Secrets**
+6. Add:
+
+   * Key: `DISCORD_TOKEN`
+   * Value: your bot token
+7. Click **Run**
+
+---
+
+## 3. Run Locally
+
+### Clone and install
 
 ```bash
 git clone https://github.com/Dsune0/Lura-bot
-cd <repo>
+cd Lura-bot
 pip install -U discord.py
 ```
 
 ---
 
-### 2. Create a Bot
+### Configure token
 
-Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+Create a file named `config.json`:
 
-**Steps:**
+```json
+{
+  "token": "your_token_here"
+}
+```
 
-1. Create an application
-2. Go to Bot -> Reset Token
-3. Copy the Bot Token (keep it secret)
+**Important:**
+Do not upload `config.json` to GitHub. Keep it in `.gitignore`.
 
 ---
 
-### 3. Grant bot permissions
-
-In the Developer Portal:
-
-Bot -> Privileged Gateway Intents -> Server Members Intent
-Installation -> Default install settings -> Guild Install -> Scopes -> Add: `bot` `applications.commands`
-Installation -> Default install settings -> Guild Install -> Permissions -> Add: `Move Members` `View Channels` `Send Messages` `Embed Links` ``
-
-Use the generated URL to invite the bot to your server, make sure the bots Role is given access to the voice channels and whichever text channel you will be using for it 
-
----
-
-### 4. Configure Token
-
-Use an environment variable for the bot token saved locally
-`.env`:
-```
-DISCORD_TOKEN=your_token
-```
-
-### 5. Run
+### Run the bot
 
 ```bash
 python main.py
@@ -66,24 +111,25 @@ Example:
 /create_comp from_channel:Lobby to_channel:Game users:@user1 @user2
 ```
 
-This posts a panel with:
+---
 
-From channel, To channel, Users
+## Panel Behavior
 
-Buttons to:
+Each panel shows:
 
-Move -> moves listed users from `from_channel` -> `to_channel`
+* **From channel**
+* **To channel**
+* **Users**
 
-Move Back -> move listed users `to_channel` -> `from_channel`
+Buttons:
+
+* **Move** → moves listed users from `from_channel` → `to_channel`
+* **Move Back** → moves listed users from `to_channel` → `from_channel`
 
 ---
 
-## Running on Replit
+## Notes
 
-1. Create an account on Replit
-2. Click on `Import code or design`
-3. Choose github and paste the link `https://github.com/Dsune0/Lura-bot`
-4. Click on `Import from Github`
-5. Click on `Tools & files` and then on `Secrets`
-6. Click on `New Secret`, as key you enter `DISCORD_TOKEN` and for value you paste your discord token
-7. Click on `Add Secret` and then click on the Play button to start the bot
+* Panels are saved in `panels.json`
+* Buttons persist after bot restarts
+* Only users with **Move Members** permission can use the panel
