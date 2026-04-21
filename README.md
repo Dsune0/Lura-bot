@@ -12,7 +12,7 @@ Go to the [Discord Developer Portal](https://discord.com/developers/applications
 ### Create the bot
 
 1. Create a new application
-2. Go to **Bot** → **Add Bot**
+2. Go to **Bot**
 3. Copy the **Bot Token** (keep it secret)
 
 ---
