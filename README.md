@@ -1,6 +1,7 @@
 # Lura Bot
 
 Bot that creates panels with buttons to move specific users between two voice channels.
+<img width="1111" height="541" alt="firefox_y25gO737t4" src="https://github.com/user-attachments/assets/be9539fd-73db-4ffd-bd5c-e30476346300" />
 
 ---
 
