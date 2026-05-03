@@ -109,6 +109,14 @@ class MovePanelView(discord.ui.View):
     async def _handle_move(
         self, interaction: discord.Interaction, direction: str
     ) -> None:
+
+        if not interaction.user.guild_permissions.move_members:
+            await self._send_error(
+                interaction,
+                "You need the `Move Members` permission to use this panel.",
+            )
+            return
+        
         panels = load_panels()
         panel = next((p for p in panels if int(p["panel_id"]) == self.panel_id), None)
 
