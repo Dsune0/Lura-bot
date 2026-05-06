@@ -46,7 +46,26 @@ Make sure the bot role has access to the relevant voice and text channels.
 
 ---
 
-## 2. Run Locally
+## 2. Run on Replit
+
+1. Go to Replit
+2. Click **Import code or design**
+3. Choose **GitHub** and paste:
+
+   ```
+   https://github.com/Dsune0/Lura-bot
+   ```
+4. Import the repo
+5. Open **Secrets**
+6. Add:
+
+   * Key: `DISCORD_TOKEN`
+   * Value: your bot token
+7. Click **Run**
+
+---
+
+## 3. Run Locally
 
 ### Clone and install
 
