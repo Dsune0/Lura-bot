@@ -48,6 +48,8 @@ Make sure the bot role has access to the relevant voice and text channels.
 
 ## 2. Run on Replit
 
+## Note that Replit stops inactive bots after 15 minutes(?) so you might have start it up if you're bad at reaching p3 - preferably you selfhost it instead
+
 1. Go to Replit
 2. Click **Import code or design**
 3. Choose **GitHub** and paste:
